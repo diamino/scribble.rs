@@ -19,6 +19,7 @@ var (
 		"german":     "de",
 		"french":     "fr",
 		"dutch":      "nl",
+		"dutch_kids": "nl_kids",
 	}
 
 	//go:embed words/*
