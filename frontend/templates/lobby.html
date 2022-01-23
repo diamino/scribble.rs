@@ -128,6 +128,11 @@
                                         <button class="dialog-button"
                                             onclick="changeName(document.getElementById('namechange-field-unstarted-dialog').value)">{{.Translation.Get "apply"}}</button>
                                     </div>
+                                    <div style="display: flex; flex-direction: row;">
+                                        <input class="input-item" type="checkbox" id="handicap" name="handicap" value="true"
+                                            onclick="changeHandicap(this.checked)"/>
+                                        Kids handicap
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -654,6 +659,13 @@
                     data: name,
                 }));
             }
+        }
+
+        function changeHandicap(value) {
+            socket.send(JSON.stringify({
+                type: "handicap-change",
+                data: value,
+            }));
         }
 
         function setUsernameLocally(name) {
@@ -1427,6 +1439,12 @@
                 lastPlayerscoreSpan.innerText = '{{.Translation.Get "last-turn"}}'.format(player.lastScore);
                 playerscoreDiv.appendChild(lastPlayerscoreSpan);
 
+                if (player.handicap) {
+                    const handicapSpan = document.createElement("span");
+                    handicapSpan.classList.add("playerscore");
+                    handicapSpan.innerText = '(h)'
+                    playerscoreDiv.appendChild(handicapSpan)
+                }
                 
                 if (player.state === "drawing") {
                     drawerID = player.id;

@@ -190,6 +190,9 @@ type Player struct {
 	Name string `json:"name"`
 	// Score is the points that the player got in the current Lobby.
 	Score int `json:"score"`
+	// Handicap defins whether a player is using kids handicap (and hence is
+	// receiving extra points)
+	Handicap bool `json:"handicap"`
 	// Connected defines whether the players websocket connection is currently
 	// established. This has previously been in state but has been moved out
 	// in order to avoid losing the state on refreshing the page.
@@ -279,6 +282,7 @@ func (lobby *Lobby) AppendFill(fill *FillEvent) {
 func createPlayer(name string) *Player {
 	return &Player{
 		Name:         SanitizeName(name),
+		Handicap:	  false,
 		ID:           uuid.Must(uuid.NewV4()).String(),
 		userSession:  uuid.Must(uuid.NewV4()).String(),
 		votedForKick: make(map[string]bool),

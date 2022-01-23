@@ -244,6 +244,12 @@ func (lobby *Lobby) HandleEvent(raw []byte, received *GameEvent, player *Player)
 			return fmt.Errorf("invalid data in name-change event: %v", received.Data)
 		}
 		handleNameChangeEvent(player, lobby, newName)
+	} else if received.Type == "handicap-change" {
+		newHandicap, isBool := (received.Data).(bool)
+		if !isBool {
+			return fmt.Errorf("invalid data in handicap-change event: %v", received.Data)
+		}
+		handleHandicapChangeEvent(player, lobby, newHandicap)	
 	} else if received.Type == "request-drawing" {
 		//Since the client shouldn't be blocking to wait for the drawing, it's
 		//fine to emit the event if there's no drawing.
@@ -287,7 +293,12 @@ func handleMessage(message string, sender *Player, lobby *Lobby) {
 		if normSearched == normInput {
 			secondsLeft := int(lobby.RoundEndTime/1000 - time.Now().UTC().UnixNano()/1000000000)
 
-			sender.LastScore = calculateGuesserScore(lobby.hintCount, lobby.hintsLeft, secondsLeft, lobby.DrawingTime)
+			newScore := calculateGuesserScore(lobby.hintCount, lobby.hintsLeft, secondsLeft, lobby.DrawingTime)
+			if sender.Handicap {
+				sender.LastScore = newScore * 15 / 10 
+			} else {
+				sender.LastScore = newScore
+			}
 			sender.Score += sender.LastScore
 
 			lobby.scoreEarnedByGuessers += sender.LastScore
@@ -549,6 +560,22 @@ func handleNameChangeEvent(caller *Player, lobby *Lobby, name string) {
 			PlayerID:   caller.ID,
 			PlayerName: newName,
 		})
+	}
+}
+
+func handleHandicapChangeEvent(caller *Player, lobby *Lobby, handicap bool) {
+	oldHandicap := caller.Handicap
+	newHandicap := handicap
+
+	if newHandicap {
+		log.Printf("%s now has handicap enabled\n", caller.Name)
+	} else {
+		log.Printf("%s now has handicap disabled\n", caller.Name)
+	}
+
+	if oldHandicap != newHandicap {
+		caller.Handicap = newHandicap
+		// TODO: Send update to lobby
 	}
 }
 
